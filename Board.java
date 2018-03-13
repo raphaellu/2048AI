@@ -838,69 +838,6 @@ public class Board {
 		}
 	}
 
-	/*
-	 * Name: undo()
-	 *
-	 * Purpose: The purpose of this board is to copy the previously saved board
-	 * (taken from the save() method) back into the grid instance variable. When
-	 * undo() is called on the board, then board will revert back to this
-	 * previously saved board.
-	 *
-	 * Parameters: none
-	 *
-	 * Return: void
-	 */
-	public void undo() {
-		if (undoGrids.size() > 0) {
-			this.setGrid(undoGrids.pop());
-			this.score = this.undoScores.pop();
-		}
-	}
-
-
-	/*
-	 * Name: rotate(boolean rotateClockewise)
-	 *
-	 * Purpose: The purpose of this method is to rotate the 
-	 * game board either clockwise 90 degrees or counter-clockwise
-	 * depending on the value of the passed boolean. 
-	 *
-	 * Parameters: boolean rotateClockwise which represents the
-	 * boolean which will determine whether to rotate clockwise or
-	 * anti clockwise. If the boolean is true, rotate clockwise; if
-	 * false, rotate counter-clockwise
-	 *
-	 * Return: void
-	 */
-	public void rotate(boolean rotateClockwise) {
-		if (rotateClockwise) {
-			//make copy of grid same length as original
-			int[][] copy = new int [grid.length][grid.length];
-
-			//loop through grid and stagger into copy each position of grid 
-			for (int colI = 0; colI < this.GRID_SIZE; colI++) {
-				for (int rowI = 0; rowI < this.GRID_SIZE; rowI++) {
-					copy[rowI][grid[0].length-1 - colI] = this.grid[colI][rowI];
-				}
-			} 
-			//set grid to values of copy
-			this.grid = copy;
-		}
-
-		else {
-			//make copy of grid same lengeth as original
-			int[][] copy = new int [grid.length][grid.length];
-
-			//loop through grid and stagger into copy each position of grid 
-			for (int colI = 0; colI < this.GRID_SIZE; colI++) {
-				for (int rowI = 0; rowI < this.GRID_SIZE; rowI++) {
-					copy[grid[0].length-1-rowI][colI] = this.grid[colI][rowI];
-				}
-			} 
-			//set grid to values of copy
-			this.grid = copy;
-		}
-	}
 
 	@Override
 	public String toString() {

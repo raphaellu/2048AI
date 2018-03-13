@@ -14,7 +14,12 @@ public class Simulation {
 
 	/*TODO: Le*/
 	public static Direction[] moves(Board board){
-		return new Direction[4];
+		Direction[] directions = new Direction[4];
+		directions[0] = board.canMove(Direction.LEFT) ? Direction.LEFT : null;
+		directions[1] = board.canMove(Direction.RIGHT) ? Direction.RIGHT : null;
+		directions[2] = board.canMove(Direction.UP) ? Direction.UP : null;
+		directions[3] = board.canMove(Direction.DOWN) ? Direction.DOWN : null;
+		return directions;
 	}
 
 	/*TODO: Dustin*/
@@ -26,7 +31,9 @@ public class Simulation {
 	public static int ApproximateBFT(Board board, int currDepth, int maxDepth){return 0;}
 
 	/*TODO: Le*/
-	public static void simulate(Board board, int maxDepth, int seed){}
+	public static void simulate(Board board, int maxDepth, int seed){
+		
+	}
 
 
 	public static void main(String[] args) {
