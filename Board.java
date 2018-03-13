@@ -838,6 +838,24 @@ public class Board {
 		}
 	}
 
+	/*
+	 * Name: undo()
+	 *
+	 * Purpose: The purpose of this board is to copy the previously saved board
+	 * (taken from the save() method) back into the grid instance variable. When
+	 * undo() is called on the board, then board will revert back to this
+	 * previously saved board.
+	 *
+	 * Parameters: none
+	 *
+	 * Return: void
+	 */
+	public void undo() {
+		if (undoGrids.size() > 0) {
+			this.setGrid(undoGrids.pop());
+			this.score = this.undoScores.pop();
+		}
+	}
 
 	@Override
 	public String toString() {
