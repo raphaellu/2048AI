@@ -213,12 +213,8 @@ public class Board {
 				if (grid[rowI][colI] == 0) {
 					// if count equals random location generated, place tile
 					if (count == location) {
-						System.out.println("Adding a tile to location " + rowI + ", " + colI);
-						if (value < TWO_PROBABILITY) {
-							grid[rowI][colI] = 2;
-						} else {
-							grid[rowI][colI] = 4;
-						}
+						// System.out.println("Adding a tile to location " + rowI + ", " + colI);
+						grid[rowI][colI] = 2;
 					}
 					count++;
 				}
@@ -226,47 +222,11 @@ public class Board {
 		}
 	}
 
-
 	public void addTile(int row, int col) {
-		int count = 0;
-		// loop through grid keeping count of every empty space on board
-		for (int rowI = 0; rowI < grid.length; rowI++) {
-			for (int colI = 0; colI < grid[rowI].length; colI++) {
-				if (grid[rowI][colI] == 0) {
-					count++;
-				}
-			}
-		}
-
-		// if count is still 0 after loop, no empty spaces, return
-		if (count == 0) {
-			System.out.println("There are no empty spaces!");
-			return;
-		}
-
-		// keep track of where on board random tile should be placed
-		int location = random.nextInt(count);
-		int value = random.nextInt(100);
-
-		// reset count
-		count = 0;
-		// loop through grid checking where grid is 0 & incrementing count
-		for (int rowI = 0; rowI < grid.length; rowI++) {
-			for (int colI = 0; colI < grid[rowI].length; colI++) {
-				if (grid[rowI][colI] == 0) {
-					// if count equals random location generated, place tile
-					if (count == location) {
-						System.out.println("Adding a tile to location " + rowI + ", " + colI);
-						if (value < TWO_PROBABILITY) {
-							grid[rowI][colI] = 2;
-						} else {
-							grid[rowI][colI] = 4;
-						}
-					}
-					count++;
-				}
-			}
-		}
+		if (grid[row][col] == 0)
+			grid[row][col] = 2;
+		else
+			System.out.println("You cannot add tile to row " + row + " and col " + col);
 	}
 
 
@@ -510,8 +470,6 @@ public class Board {
 			} else if (direction == Direction.DOWN) {
 				moveDown(direction);
 			}
-
-			this.addRandomTile();
 		}
 		// else if canMove is false, exit and don't move tiles
 		else {
