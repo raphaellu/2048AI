@@ -510,6 +510,8 @@ public class Board {
 			} else if (direction == Direction.DOWN) {
 				moveDown(direction);
 			}
+
+			this.addRandomTile();
 		}
 		// else if canMove is false, exit and don't move tiles
 		else {

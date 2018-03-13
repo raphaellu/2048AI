@@ -1,6 +1,14 @@
 import java.util.*;
 
 public class Simulation {
+	public static int INIT_DEPTH = 0;
+	public static int MAX_DEPTH = 100;
+	public static long SEED = 999;
+	public static int GRID_SIZE = 4;
+
+	/* different algorithms/policies */
+	public static int ALG_BFT = 0;
+	public static int ALG_APPXIMATE_BFT = 1;
 
 	/*TODO: Joseph*/
 	public static List<Board> expand(Board board, Direction action){
@@ -28,17 +36,25 @@ public class Simulation {
 
 	/*TODO: Carlos*/
 	// return the final expected score
-	public static int ApproximateBFT(Board board, int currDepth, int maxDepth){return 0;}
+	public static int approximateBFT(Board board, int currDepth, int maxDepth){return 0;}
 
 	/*TODO: Le*/
-	public static void simulate(Board board, int maxDepth, int seed){
-		
+	public static double simulate(int currDepth, int maxDepth, int repeat, int alg){
+		int count = 0;
+		double score = 0;
+		while (count < repeat) {
+			Board board = new Board(new Random(SEED), GRID_SIZE);	
+			if (alg == ALG_BFT)
+				score += BFT(board, currDepth, MAX_DEPTH);
+			else if (alg == ALG_APPXIMATE_BFT)
+				score += approximateBFT(board, currDepth, MAX_DEPTH);
+			count++;
+		}
+		return score/(double)count;
 	}
 
-
 	public static void main(String[] args) {
-		Board board = new Board(new Random(), 4);
-		System.out.println(board);
+		simulate(INIT_DEPTH, MAX_DEPTH, 1, ALG_BFT);
 	}
 }
 
