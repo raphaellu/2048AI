@@ -1,4 +1,5 @@
 import java.util.*;
+import javafx.util.*;
 
 public class Simulation {
 	public static int INIT_DEPTH = 0;
@@ -32,7 +33,45 @@ public class Simulation {
 
 	/*TODO: Dustin*/
 	// return the final expected score
-	public static int BFT(Board board, int currDepth, int maxDepth){return 0;}
+	public static Tuple<float, Direction, Map> BFT(Board board, int currDepth, int maxDepth){
+
+            if currDepth == maxDepth {
+                return 0;
+            }
+
+            //Store expected maxes for each direction
+            float maxValue = 0.0;
+            Map<int, Tuple<float, Direction, Map>> maxCandidates = null;
+
+            for Direction d : moves(board) {
+                
+                board.move(d);
+                float expMax = board.getScore();
+                board.undo();
+            
+                //Build a tree of states so we know the path to traverse
+                Map<int, Tuple<float, Direction, Map>> candidates = new HashMap();
+
+                List<Board> nextStates = expand(board, d);
+                for Board sPrime : nextStates {
+                    //Get the exp map, the direction taken to get it, and a map of all of the candidates in that direction
+                    Tuple<float, Direction, Map> expMaxNextDir = BFT(sPrime, currDepth + 1, maxDepth);
+                    expMax += (1.0 / nextStates.size()) * expMaxNextDir.t1;
+                    //Add this to the list of candidates
+                    candidates.put(Arrays.hashCode(sPrime.getGrid()), expMaxNextDir);
+                }
+
+                //Update the max
+                if expMax > maxValue {
+                    maxValue = expMax;
+                    maxCandidates = candidates;
+                    
+                }
+            } 
+
+            return Tuple<float, Direction, Map>(maxValue, d, maxCandidates); 
+
+        }
 
 	/*TODO: Carlos*/
 	// return the final expected score
