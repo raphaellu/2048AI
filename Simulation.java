@@ -3,10 +3,19 @@ import java.util.*;
 public class Simulation {
 
 	/*TODO: Joseph*/
-	public static List<Board> expand(Board board){return null;}
+	public static List<Board> expand(Board board, Direction action){
+		// TODO 1: get all empty space after making the move
+
+		// TODO 2: fill in each space and generate a new Board
+
+		// TODO 3: return all possible resulting boards.
+		return null;
+	}
 
 	/*TODO: Le*/
-	public static Direction[] moves(Board board){return new Direction[4];}
+	public static Direction[] moves(Board board){
+		return new Direction[4];
+	}
 
 	/*TODO: Dustin*/
 	// return the final expected score
