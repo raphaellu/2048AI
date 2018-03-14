@@ -1,112 +1,165 @@
-import java.util.*;
-import javafx.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class Simulation {
-	public static int INIT_DEPTH = 0;
-	public static int MAX_DEPTH = 100;
-	public static long SEED = 999;
-	public static int GRID_SIZE = 4;
+  private static final int LIM_DEPTH = 5;
+  public static int INIT_DEPTH = 0;
+  public static int MAX_DEPTH = 100;
+  public static long SEED = 999;
+  public static int GRID_SIZE = 4;
 
-	/* different algorithms/policies */
-	public static int ALG_BFT = 0;
-	public static int ALG_APPXIMATE_BFT = 1;
+  /* different algorithms/policies */
+  public static boolean ALG_BFT = false;
+  public static boolean ALG_APPROXIMATE_BFT = true;
 
-	/*TODO: Joseph*/
-	public static List<Board> expand(Board s, Direction direction){
-		// TODO 1: get all empty space after making the move
-		ArrayList<Board> boards = new ArrayList<>();
-		s.move(direction);
+  /* TODO: Joseph */
+  public static List<Board> expand(Board s, Direction direction) {
+    // TODO 1: get all empty space after making the move
+    ArrayList<Board> boards = new ArrayList<>();
+    s.move(direction);
 
-		// TODO 2: fill in each space and generate a new Board
-		int[][] grids = s.getGrid();
-		for (int r = 0; r < grids.length; ++r) {
-			for (int c = 0; c < grids[0].length; ++c) {
-				if (grids[r][c] == 0) {
-					grids[r][c] = 2;
-					boards.add(new Board(new Random(SEED), grids));
-					grids[r][c] = 0;
-				}
-			}
-		}
-		// TODO 3: return all possible resulting boards.
-		return boards;
-	}
+    // TODO 2: fill in each space and generate a new Board
+    int[][] grids = s.getGrid();
+    for (int r = 0; r < grids.length; ++r) {
+      for (int c = 0; c < grids[0].length; ++c) {
+        if (grids[r][c] == 0) {
+          grids[r][c] = 2;
+          boards.add(new Board(new Random(SEED), grids));
+          grids[r][c] = 0;
+        }
+      }
+    }
+    // TODO 3: return all possible resulting boards.
+    return boards;
+  }
 
-	/*TODO: Le*/
-	public static Direction[] moves(Board board){
-		Direction[] directions = new Direction[4];
-		directions[0] = board.canMove(Direction.LEFT) ? Direction.LEFT : null;
-		directions[1] = board.canMove(Direction.RIGHT) ? Direction.RIGHT : null;
-		directions[2] = board.canMove(Direction.UP) ? Direction.UP : null;
-		directions[3] = board.canMove(Direction.DOWN) ? Direction.DOWN : null;
-		return directions;
-	}
+  /* TODO: Le */
+  public static Direction[] moves(Board board) {
+    Direction[] directions = new Direction[4];
 
-	/*TODO: Dustin*/
-	// return the final expected score
-	public static Tuple<Double, Direction, Map> BFT(Board board, int currDepth, int maxDepth){
-        
-        if (currDepth == maxDepth) return new Tuple<Double, Direction, Map>();
-        
-        //Store expected maxes for each direction
-        double maxValue = 0.0;
-        Map<int, Tuple<Double, Direction, Map>> maxCandidates;
+    directions[0] = board.canMove(Direction.LEFT) ? Direction.LEFT : null;
+    directions[1] = board.canMove(Direction.RIGHT) ? Direction.RIGHT : null;
+    directions[2] = board.canMove(Direction.UP) ? Direction.UP : null;
+    directions[3] = board.canMove(Direction.DOWN) ? Direction.DOWN : null;
 
-        for (Direction d : moves(board)) {
-            board.move(d);
-            board.addRandomTile();
-            double expMax = board.getScore();
-            board.undo();
-        
-            //Build a tree of states so we know the path to traverse
-            Map<int, Tuple<float, Direction, Map>> candidates = new HashMap();
+    return directions;
+  }
 
-            List<Board> nextStates = expand(board, d);
-            for (Board sPrime : nextStates) {
-                //Get the exp map, the direction taken to get it, and a map of all of the candidates in that direction
-                Tuple<Double, Direction, Map> expMaxNextDir = BFT(sPrime, currDepth + 1, maxDepth);
-                expMax += (1.0 / nextStates.size()) * expMaxNextDir.t1;
-                //Add this to the list of candidates
-                candidates.put(Arrays.hashCode(sPrime.getGrid()), expMaxNextDir);
-            }
+  /* TODO: Dustin */
+  // return the final expected score
+  public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth) {
 
-            //Update the max
-            if (expMax > maxValue) {
-                maxValue = expMax;
-                maxCandidates = candidates;
-            }
-        } 
-        return Tuple<Double, Direction, Map>(maxValue, d, maxCandidates); 
+    if (currDepth == maxDepth) {
+      if (ALG_APPROXIMATE_BFT)
+        return approximateBFT(s); // run some heuristic
+      else
+        return new Tuple<Double, Direction, Map>(); // i.e. 0
     }
 
-	/*TODO: Carlos*/
-	// return the final expected score
-	public static int approximateBFT(Board board, int currDepth, int maxDepth){return 0;}
 
-	/*TODO: Le*/
-	public static double simulate(int currDepth, int maxDepth, int repeat, int alg){
-		int count = 0;
-		double score = 0;
-		while (count < repeat) {
-			Board board = new Board(new Random(SEED), GRID_SIZE);	
-			if (alg == ALG_BFT)
-				score += BFT(board, currDepth, MAX_DEPTH);
-			else if (alg == ALG_APPXIMATE_BFT)
-				score += approximateBFT(board, currDepth, MAX_DEPTH);
-			count++;
-		}
-		return score/(double)count;
-	}
+    // Store expected maxes for each direction
+    double maxValue = 0.0;
+    Direction maxDir = Direction.DOWN;
+    Map<Integer, Tuple<Double, Direction, Map>> maxCandidates = new HashMap<>();
 
-	public static void main(String[] args) {
-		simulate(INIT_DEPTH, MAX_DEPTH, 1, ALG_BFT);
-		// Random generator = new Random(9);
-  //       Board board = new Board(generator, 3);
-  //       System.out.println("init:");
-  //       System.out.println(board);
-  //       List<Board> res = expand(board, Direction.DOWN);
-  //       for (Board b : res)
-  //       	System.out.println(b);
-	}
+    for (Direction d : moves(s)) {
+      // `d` is not a valid move at state `board`
+      if (d == null)
+        continue;
+
+      s.move(d);
+      s.addRandomTile();
+      double expMax = s.getScore();
+      s.undo();
+
+      // Build a tree of states so we know the path to traverse
+      Map<Integer, Tuple<Double, Direction, Map>> candidates = new HashMap<>();
+
+      List<Board> nextStates = expand(s, d);
+      for (Board sPrime : nextStates) {
+        // Get the exp map, the direction taken to get it, and a map of all of the candidates in
+        // that direction
+        Tuple<Double, Direction, Map> expMaxNextDir = BFT(sPrime, currDepth + 1, maxDepth);
+        expMax += (1.0 / nextStates.size()) * expMaxNextDir.t1;
+        // Add this to the list of candidates
+        candidates.put(Arrays.hashCode(sPrime.getGrid()), expMaxNextDir);
+      }
+
+      // Update the max
+      if (expMax > maxValue) {
+        maxValue = expMax;
+        maxDir = d;
+        maxCandidates = candidates;
+      }
+    }
+    return new Tuple<Double, Direction, Map>(maxValue, maxDir, maxCandidates);
+  }
+
+  /* TODO: Carlos */
+  // return the final expected score
+  public static Tuple<Double, Direction, Map> approximateBFT(Board s) {
+    // No more candidates, just an estimate
+    Map<Integer, Tuple<Double, Direction, Map>> nowhereToGo = new HashMap<>();
+
+    // Add all the values at the board at this point
+    int[][] grids = s.getGrid();
+    double total = 0.0;
+    int numOpen = 0;
+
+    // Compute total sum and get number of open tiles
+    for (int r = 0; r < grids.length; ++r) {
+      for (int c = 0; c < grids[0].length; ++c) {
+        total += grids[r][c] = 2;
+        if (grids[r][c] == 0)
+          numOpen++;
+      }
+    }
+
+    // account for possibility of moves
+    Direction[] dirs = moves(s);
+    int countOfMoves = 0;
+    for (Direction dir : dirs)
+      if (dir != null)
+        countOfMoves++;
+
+    // Now estimate for `limDepth` to `maxDepth`
+    // Multiply sum of current tiles by |num open spots|/|board size|
+    // (bonus for having more open spots)
+    int boardSize = grids.length * grids.length;
+    total *= (numOpen + grids.length * countOfMoves) / boardSize;
+    return new Tuple<Double, Direction, Map>(total, Direction.RIGHT, nowhereToGo);
+  }
+
+  /* TODO: Le */
+  public static double simulate(int repeat) {
+    int currDepth = 0;
+    int count = 0;
+    double score = 0;
+    while (count < repeat) {
+      Board board = new Board(new Random(SEED), GRID_SIZE);
+
+      // Run BFT (approximate if flag is set, otherwise go all the way down to MAX_DEPTH)
+      int maxDepth = ALG_APPROXIMATE_BFT ? LIM_DEPTH : MAX_DEPTH;
+      score += BFT(board, currDepth, maxDepth).t1;
+
+      count++;
+    }
+    return score / count;
+  }
+
+  public static void main(String[] args) {
+    simulate(100);
+    // Random generator = new Random(9);
+    // Board board = new Board(generator, 3);
+    // System.out.println("init:");
+    // System.out.println(board);
+    // List<Board> res = expand(board, Direction.DOWN);
+    // for (Board b : res)
+    // System.out.println(b);
+  }
 }
 
