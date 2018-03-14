@@ -213,17 +213,17 @@ public class Board implements Cloneable {
       System.out.println("You cannot add tile to row " + row + " and col " + col);
   }
 
-  public ArrayList<Cell> getEmptyCells() {
-    ArrayList<Cell> cells = new ArrayList<>();
-    for (int rowI = 0; rowI < grid.length; rowI++) {
-      for (int colI = 0; colI < grid[rowI].length; colI++) {
-        if (grid[rowI][colI] == 0) {
-          cells.add(new Cell(rowI, colI));
-        }
-      }
-    }
-    return cells;
-  }
+  // public ArrayList<Cell> getEmptyCells() {
+  //   ArrayList<Cell> cells = new ArrayList<>();
+  //   for (int rowI = 0; rowI < grid.length; rowI++) {
+  //     for (int colI = 0; colI < grid[rowI].length; colI++) {
+  //       if (grid[rowI][colI] == 0) {
+  //         cells.add(new Cell(rowI, colI));
+  //       }
+  //     }
+  //   }
+  //   return cells;
+  // }
 
 
 
