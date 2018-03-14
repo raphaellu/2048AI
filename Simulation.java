@@ -8,7 +8,7 @@ import java.util.Random;
 public class Simulation {
   private static final int LIM_DEPTH = 1;
   public static int INIT_DEPTH = 0;
-  public static int MAX_DEPTH = 100;
+  public static int MAX_DEPTH = 2;
   public static long SEED = 999;
   public static int GRID_SIZE = 4;
 
@@ -33,6 +33,7 @@ public class Simulation {
         }
       }
     }
+    s.undo();
     // TODO 3: return all possible resulting boards.
     return boards;
   }
