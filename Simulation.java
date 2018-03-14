@@ -12,13 +12,24 @@ public class Simulation {
 	public static int ALG_APPXIMATE_BFT = 1;
 
 	/*TODO: Joseph*/
-	public static List<Board> expand(Board board, Direction action){
+	public static List<Board> expand(Board s, Direction direction){
 		// TODO 1: get all empty space after making the move
+		ArrayList<Board> boards = new ArrayList<>();
+		s.move(direction);
 
 		// TODO 2: fill in each space and generate a new Board
-
+		int[][] grids = s.getGrid();
+		for (int r = 0; r < grids.length; ++r) {
+			for (int c = 0; c < grids[0].length; ++c) {
+				if (grids[r][c] == 0) {
+					grids[r][c] = 2;
+					boards.add(new Board(new Random(SEED), grids));
+					grids[r][c] = 0;
+				}
+			}
+		}
 		// TODO 3: return all possible resulting boards.
-		return null;
+		return boards;
 	}
 
 	/*TODO: Le*/
@@ -65,9 +76,7 @@ public class Simulation {
                 maxCandidates = candidates;
             }
         } 
-
         return Tuple<Double, Direction, Map>(maxValue, d, maxCandidates); 
-
     }
 
 	/*TODO: Carlos*/
@@ -91,6 +100,13 @@ public class Simulation {
 
 	public static void main(String[] args) {
 		simulate(INIT_DEPTH, MAX_DEPTH, 1, ALG_BFT);
+		// Random generator = new Random(9);
+  //       Board board = new Board(generator, 3);
+  //       System.out.println("init:");
+  //       System.out.println(board);
+  //       List<Board> res = expand(board, Direction.DOWN);
+  //       for (Board b : res)
+  //       	System.out.println(b);
 	}
 }
 
