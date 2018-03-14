@@ -45,7 +45,7 @@
 
 import java.util.*;
 
-public class Board {
+public class Board implements Cloneable {
 
 	/** Number of tiles showing when the game starts */
 	public final int NUM_START_TILES = 2;  
@@ -102,6 +102,8 @@ public class Board {
 			addRandomTile();
 		}
 	}
+
+
 
 
 	/** Constructor used to load boards for grading/testing
@@ -228,6 +230,20 @@ public class Board {
 		else
 			System.out.println("You cannot add tile to row " + row + " and col " + col);
 	}
+
+	public ArrayList<Cell> getEmptyCells() {
+        ArrayList<Cell> cells = new ArrayList<>();
+        for (int rowI = 0; rowI < grid.length; rowI++) {
+            for (int colI = 0; colI < grid[rowI].length; colI++) {
+                if (grid[rowI][colI] == 0) {
+                    cells.add(new Cell(rowI, colI));
+                }
+            }
+        }
+        return cells;
+    }
+
+
 
 
 	/*
