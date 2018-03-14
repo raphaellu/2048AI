@@ -139,7 +139,7 @@ public class Simulation {
     double score = 0;
 
     // approximate if flag is set, otherwise go all the way down to `maxPlays`
-    int maxDepth = ALG_APPROXIMATE_BFT ? LIM_DEPTH : maxPlays;
+    int maxBFTDepth = ALG_APPROXIMATE_BFT ? LIM_DEPTH : MAX_DEPTH;
 
     while (count < maxPlays) {
       // initialize the board to the same initialGrid, but use a different seed
@@ -149,16 +149,16 @@ public class Simulation {
       System.out.println("Initial board:\n" + board.toString());
 
       // Play the game up to depth `MAX_DEPTH`
-      for (int currDepth = 0; currDepth < maxPlays; currDepth++) {
+      for (int currDepth = 0; currDepth < MAX_DEPTH; currDepth++) {
         // Evaluate our current state
         // copy the board to prevent the code from changing ours
         Board s = new Board(rand, board.getGrid());
-        Tuple<Double, Direction, Map> next = BFT(s, currDepth, maxDepth);
+        Tuple<Double, Direction, Map> next = BFT(s, 0, maxBFTDepth);
 
         // Move in direction of highest expected score
         // Log actions
         System.out.println(String.format("@%d: took action %s (E[score@%d] = %.2f)", currDepth,
-            next.t2, maxDepth, next.t1));
+            next.t2, maxBFTDepth, next.t1));
         board.move(next.t2);
         System.out.println(board);
         board.addRandomTile();
@@ -172,7 +172,8 @@ public class Simulation {
   }
 
   public static void main(String[] args) {
-    simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, MAX_DEPTH);
+    simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
+        10 /* play 10 times */);
     // Random generator = new Random(9);
     // Board board = new Board(generator, 3);
     // System.out.println("init:");
