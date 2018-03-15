@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class Simulation {
-  private static final int LIM_DEPTH = 2;
+  private static final int LIM_DEPTH = 5;
   public static int INIT_DEPTH = 0;
   public static int MAX_DEPTH = 100;
   public static long SEED = 999;
@@ -150,10 +150,16 @@ public class Simulation {
     int[][] grids = s.getGrid();
     double total = 0.0;
     int numOpen = 0;
+    int maxTile = 0, maxR = 0, maxC = 0;
 
     // Compute total sum and get number of open tiles
     for (int r = 0; r < grids.length; ++r) {
       for (int c = 0; c < grids[0].length; ++c) {
+
+        // get max corner value
+        maxTile = Math.max(maxTile, grids[r][c]);
+
+
         total += grids[r][c] = 2;
         if (grids[r][c] == 0)
           numOpen++;
@@ -172,6 +178,10 @@ public class Simulation {
     // (bonus for having more open spots)
     int boardSize = grids.length * grids.length;
     total *= (numOpen + grids.length * countOfMoves) / boardSize;
+
+    // reward highest value at corner
+    if ((maxR == 0 || maxR == grids.length - 1) && (maxC == 0 || maxC == grids.length))
+      total += 2 * maxTile;
     return new Tuple<Double, Direction, Map>(total, Direction.UP, nowhereToGo);
   }
 
@@ -213,7 +223,8 @@ public class Simulation {
           if (currDepth > 0) {
             System.out.println(String.format("actual gain@%d: %f;", currDepth, actual_at_k));
             System.out.println(String.format("expect gain@%d: %f;", currDepth, exp_at_k));
-            System.out.println(String.format("diff       @%d: %f;", currDepth, actual_at_k - exp_at_k));
+            System.out
+                .println(String.format("diff       @%d: %f;", currDepth, actual_at_k - exp_at_k));
           }
 
           next = BFT(s, 0, maxBFTDepth);
