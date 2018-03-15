@@ -1,12 +1,11 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class Simulation {
-  private static final int LIM_DEPTH =3;
+  private static final int LIM_DEPTH = 3;
   public static int INIT_DEPTH = 0;
   public static int MAX_DEPTH = 30;
   public static long SEED = 999;
@@ -14,7 +13,7 @@ public class Simulation {
 
   /* different algorithms/policies */
   public static boolean ALG_BFT = false;
-  public static boolean ALG_APPROXIMATE_BFT = true;
+  public static boolean ALG_APPROXIMATE_BFT = !ALG_BFT;
 
   /* TODO: Joseph */
   public static List<Board> expand(Board s, Direction direction) {
@@ -53,13 +52,12 @@ public class Simulation {
   /* TODO: Dustin */
   // return the final expected score
   public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth) {
-    if (currDepth == maxDepth) {
-      if (ALG_APPROXIMATE_BFT)
+    if (currDepth == maxDepth || s.isGameOver()) {
+      if (!s.isGameOver() && ALG_APPROXIMATE_BFT)
         return approximateBFT(s); // run some heuristic
       else
         return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
     }
-
 
     // Store expected maxes for each direction
     double maxValue = 0.0;
@@ -147,20 +145,22 @@ public class Simulation {
       Random rand = new Random(SEED + count);
       Board board = new Board(rand, initialGrid);
       System.out.println("Initial board:\n" + board.toString());
-      //Just do the calculation once for full BFT
+
+      // Just do the calculation once for full BFT
       Tuple<Double, Direction, Map> next = new Tuple<>();
       if (ALG_BFT) {
-        next = BFT(board, 0, maxBFTDepth);
+        next = BFT(board, 0, MAX_DEPTH);
       }
 
       // Play the game up to depth `MAX_DEPTH`
       for (int currDepth = 0; currDepth < MAX_DEPTH; currDepth++) {
         // Evaluate our current state
-        //Only calculate in the loop if we are approximating
-        if (ALG_APPROXIMATE_BFT) {
-            // copy the board to prevent the code from changing ours
-            Board s = new Board(rand, board.getGrid());
-            next = BFT(s, 0, maxBFTDepth);
+        // Only calculate in the loop if we are approximating
+        // and `currDepth` is multiple of `maxBFTDepth`
+        if (ALG_APPROXIMATE_BFT && currDepth % maxBFTDepth == 0) {
+          // copy the board to prevent the code from changing ours
+          Board s = new Board(rand, board.getGrid());
+          next = BFT(s, 0, maxBFTDepth);
         }
         // Move in direction of highest expected score
         // Log actions
@@ -171,10 +171,8 @@ public class Simulation {
         board.addRandomTile();
         System.out.println(board);
 
-        //Get the next state from the map if using full BFT
-        if (ALG_BFT) {
-            next = (Tuple<Double, Direction,Map>) next.t3.get(board.hashCode());
-        }
+        // Get the next state from the map
+        next = (Tuple<Double, Direction, Map>) next.t3.get(board.hashCode());
       }
       score += board.getScore();
 
