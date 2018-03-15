@@ -1,13 +1,14 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class Simulation {
-  private static final int LIM_DEPTH = 3;
+  private static final int LIM_DEPTH = 5;
   public static int INIT_DEPTH = 0;
-  public static int MAX_DEPTH = 30;
+  public static int MAX_DEPTH = 100;
   public static long SEED = 999;
   public static int GRID_SIZE = 4;
 
@@ -51,7 +52,7 @@ public class Simulation {
 
   /* TODO: Dustin */
   // return the final expected score
-  public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth) {
+  public static Tuple<Double, Direction, Map> BFT_recurse(Board s, int currDepth, int maxDepth) {
     if (currDepth == maxDepth || s.isGameOver()) {
       if (!s.isGameOver() && ALG_APPROXIMATE_BFT)
         return approximateBFT(s); // run some heuristic
@@ -80,7 +81,7 @@ public class Simulation {
       for (Board sPrime : nextStates) {
         // Get the exp map, the direction taken to get it, and a map of all of the candidates in
         // that direction
-        Tuple<Double, Direction, Map> expMaxNextDir = BFT(sPrime, currDepth + 1, maxDepth);
+        Tuple<Double, Direction, Map> expMaxNextDir = BFT_recurse(sPrime, currDepth + 1, maxDepth);
         expMax += (1.0 / nextStates.size()) * expMaxNextDir.t1;
         // Add this to the list of candidates
         candidates.put(sPrime.hashCode(), expMaxNextDir);
@@ -94,6 +95,49 @@ public class Simulation {
       }
     }
     return new Tuple<Double, Direction, Map>(maxValue, maxDir, maxCandidates);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth) {
+    if (currDepth == maxDepth || s.isGameOver()) {
+      if (!s.isGameOver() && ALG_APPROXIMATE_BFT)
+        return approximateBFT(s); // run some heuristic
+      else
+        return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
+    }
+
+    Tuple<Double, Direction, Map> maxExpScoreTransition =
+        Arrays.stream(moves(s)).parallel().map(d -> {
+          // `d` is not a valid move at state `board`
+          if (d == null)
+            return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null);
+
+          Board ss = new Board(s.random, s.getGrid());
+
+          ss.move(d);
+          double expMax = ss.getScore();
+          ss.undo();
+
+          // Build a tree of states so we know the path to traverse
+          Map<Integer, Tuple<Double, Direction, Map>> candidates = new HashMap<>();
+
+          List<Board> nextStates = expand(ss, d);
+          for (Board sPrime : nextStates) {
+            // Get the exp map, the direction taken to get it, and a map of all of the candidates in
+            // that direction
+            Tuple<Double, Direction, Map> expMaxNextDir =
+                BFT_recurse(sPrime, currDepth + 1, maxDepth);
+            expMax = expMax + (1.0 / nextStates.size()) * expMaxNextDir.t1;
+            // Add this to the list of candidates
+            candidates.put(sPrime.hashCode(), expMaxNextDir);
+          }
+
+          return new Tuple<Double, Direction, Map>(expMax, d, candidates);
+        }).max((dir1, dir2) -> {
+          return dir1.t1 > dir2.t1 ? 1 : -1;
+        }).orElse(new Tuple<Double, Direction, Map>(0.0, Direction.UP, null));
+
+    return maxExpScoreTransition;
   }
 
   /* TODO: Carlos */
@@ -157,6 +201,7 @@ public class Simulation {
         // Evaluate our current state
         // Only calculate in the loop if we are approximating
         // and `currDepth` is multiple of `maxBFTDepth`
+
         if (ALG_APPROXIMATE_BFT && currDepth % maxBFTDepth == 0) {
           // copy the board to prevent the code from changing ours
           Board s = new Board(rand, board.getGrid());
@@ -183,7 +228,7 @@ public class Simulation {
 
   public static void main(String[] args) {
     simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
-        10 /* play 10 times */);
+        1 /* play 10 times */);
     // Random generator = new Random(9);
     // Board board = new Board(generator, 3);
     // System.out.println("init:");

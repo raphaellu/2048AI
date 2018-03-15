@@ -22,9 +22,9 @@
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Stack;
-import java.util.Arrays;
 
 public class Board implements Cloneable {
 
@@ -45,7 +45,7 @@ public class Board implements Cloneable {
   private int score; // The current score
 
   // You do not have to use these variables
-  private final Random random; // A random number generator (for testing)
+  public final Random random; // A random number generator (for testing)
   private Stack<int[][]> undoGrids; // History of game boards
   private Stack<Integer> undoScores; // History of scores
 
@@ -135,10 +135,10 @@ public class Board implements Cloneable {
    * @return A copy of the grid
    */
   public int[] getGrid1D() {
-    int[] gridCopy = new int[GRID_SIZE*GRID_SIZE];
+    int[] gridCopy = new int[GRID_SIZE * GRID_SIZE];
     for (int r = 0; r < grid.length; r++) {
       for (int c = 0; c < grid[r].length; c++) {
-        gridCopy[r*GRID_SIZE + c] = grid[r][c];
+        gridCopy[r * GRID_SIZE + c] = grid[r][c];
       }
     }
     return gridCopy;
@@ -230,15 +230,15 @@ public class Board implements Cloneable {
   }
 
   // public ArrayList<Cell> getEmptyCells() {
-  //   ArrayList<Cell> cells = new ArrayList<>();
-  //   for (int rowI = 0; rowI < grid.length; rowI++) {
-  //     for (int colI = 0; colI < grid[rowI].length; colI++) {
-  //       if (grid[rowI][colI] == 0) {
-  //         cells.add(new Cell(rowI, colI));
-  //       }
-  //     }
-  //   }
-  //   return cells;
+  // ArrayList<Cell> cells = new ArrayList<>();
+  // for (int rowI = 0; rowI < grid.length; rowI++) {
+  // for (int colI = 0; colI < grid[rowI].length; colI++) {
+  // if (grid[rowI][colI] == 0) {
+  // cells.add(new Cell(rowI, colI));
+  // }
+  // }
+  // }
+  // return cells;
   // }
 
 
@@ -541,7 +541,7 @@ public class Board implements Cloneable {
       }
 
       // set values of grid to values of ArrayList (one row)
-      for (int index = 0; index < grid.length; index++) {
+      for (int index = 0; index < list.size(); index++) {
         grid[i][index] = list.get(index).intValue();
       }
     }
@@ -618,7 +618,7 @@ public class Board implements Cloneable {
       }
 
       // set values of grid to values of ArrayList (one row)
-      for (int index = 0; index < grid.length; index++) {
+      for (int index = 0; index < list.size(); index++) {
         grid[i][index] = list.get(index).intValue();
       }
     }
@@ -695,7 +695,7 @@ public class Board implements Cloneable {
       }
 
       // set values of grid to values of ArrayList (one column)
-      for (int index = 0; index < grid.length; index++) {
+      for (int index = 0; index < list.size(); index++) {
         grid[index][j] = list.get(index).intValue();
       }
     }
@@ -773,7 +773,7 @@ public class Board implements Cloneable {
       }
 
       // set values of grid to values of ArrayList (one column)
-      for (int index = 0; index < grid.length; index++) {
+      for (int index = 0; index < list.size(); index++) {
         grid[index][j] = list.get(index).intValue();
       }
     }
