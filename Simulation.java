@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.*;
+import java.io.*;
 
 public class Simulation {
-  private static final int LIM_DEPTH = 5;
+  private static final int LIM_DEPTH = 3;
   public static int INIT_DEPTH = 0;
-  public static int MAX_DEPTH = 100;
+  public static int MAX_DEPTH = 30;
   public static long SEED = 999;
   public static int GRID_SIZE = 4;
 
@@ -98,10 +100,11 @@ public class Simulation {
   }
 
   @SuppressWarnings("unchecked")
-  public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth) {
+  public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth, boolean enableHeuristic) {
     if (currDepth == maxDepth || s.isGameOver()) {
-      if (!s.isGameOver() && ALG_APPROXIMATE_BFT)
+      if (!s.isGameOver() && ALG_APPROXIMATE_BFT && enableHeuristic)
         return approximateBFT(s); // run some heuristic
+        // return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null);
       else
         return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
     }
@@ -186,7 +189,7 @@ public class Simulation {
   }
 
   /* TODO: Le */
-  public static double simulate(int[][] initialGrid, int maxPlays) {
+  public static double simulate(int[][] initialGrid, int maxPlays, PrintWriter pw) {
     int count = 0;
     double score = 0;
 
@@ -205,9 +208,10 @@ public class Simulation {
       // Just do the calculation once for full BFT
       Tuple<Double, Direction, Map> next = new Tuple<>();
       if (ALG_BFT) {
-        next = BFT(board, 0, MAX_DEPTH);
+        next = BFT(board, 0, MAX_DEPTH, true);
       }
 
+      Double sum_exp_at_k = 0.0;
       // Play the game up to depth `MAX_DEPTH`
       for (int currDepth = 0; currDepth < MAX_DEPTH; currDepth++) {
         // Evaluate our current state
@@ -227,9 +231,13 @@ public class Simulation {
                 .println(String.format("diff       @%d: %f;", currDepth, actual_at_k - exp_at_k));
           }
 
-          next = BFT(s, 0, maxBFTDepth);
+          next = BFT(s, 0, maxBFTDepth, true);
           scoreAtPrevK = board.getScore();
           exp_at_k = next.t1;
+          sum_exp_at_k += BFT(s, 0, maxBFTDepth, false).t1;
+          System.out.println("================");
+          System.out.println(exp_at_k);
+          System.out.println(BFT(s, 0, maxBFTDepth, false).t1);
         }
         // Move in direction of highest expected score
         // Log actions
@@ -246,13 +254,16 @@ public class Simulation {
       score += board.getScore();
 
       count++;
+      pw.write("MAX_DEPTH: " + MAX_DEPTH + " LIM_DEPTH: " + LIM_DEPTH + " expected: " + sum_exp_at_k + " actual: " + board.getScore() + "\n");
     }
     return score / count;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
+  	PrintWriter pw = new PrintWriter(new File("output.txt"));
     simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
-        1 /* play 10 times */);
+        1 /* play 10 times */, pw);
+    pw.close();
     // Random generator = new Random(9);
     // Board board = new Board(generator, 3);
     // System.out.println("init:");
