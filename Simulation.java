@@ -183,8 +183,6 @@ public class Simulation {
     total *= (numOpen + grids.length * countOfMoves) / boardSize;
 
     // reward highest value at corner
-    if ((maxR == 0 || maxR == grids.length - 1) && (maxC == 0 || maxC == grids.length))
-      total += 2 * maxTile;
     return new Tuple<Double, Direction, Map>(total, Direction.UP, nowhereToGo);
   }
 
