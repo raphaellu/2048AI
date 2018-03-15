@@ -180,8 +180,6 @@ public class Simulation {
     total *= (numOpen + grids.length * countOfMoves) / boardSize;
 
     // reward highest value at corner
-    if ((maxR == 0 || maxR == grids.length - 1) && (maxC == 0 || maxC == grids.length))
-      total += 2 * maxTile;
     return new Tuple<Double, Direction, Map>(total, Direction.UP, nowhereToGo);
   }
 
@@ -251,6 +249,8 @@ public class Simulation {
   }
 
   public static void main(String[] args) {
+
+
     simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
         1 /* play 10 times */);
     // Random generator = new Random(9);
