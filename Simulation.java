@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Random;
 
 public class Simulation {
-  private static final int LIM_DEPTH = 3;
+  private static int LIM_DEPTH = 3;
   public static int INIT_DEPTH = 0;
-  public static int MAX_DEPTH = 30;
+  public static int MAX_DEPTH = 100;
   public static long SEED = 999;
   public static int GRID_SIZE = 4;
 
@@ -236,9 +236,9 @@ public class Simulation {
           scoreAtPrevK = board.getScore();
           exp_at_k = next.t1;
           sum_exp_at_k += BFT(s, 0, maxBFTDepth, false).t1;
-          System.out.println("================");
-          System.out.println("Exp   @k: " + sum_exp_at_k);
-          System.out.println("Actual@k: " + board.getScore());
+          // System.out.println("================");
+          // System.out.println("Exp   @k: " + sum_exp_at_k);
+          // System.out.println("Actual@k: " + board.getScore());
         }
         // Move in direction of highest expected score
         // Log actions
@@ -255,16 +255,32 @@ public class Simulation {
       score += board.getScore();
 
       count++;
+      double diff = board.getScore() - sum_exp_at_k;
       pw.write("MAX_DEPTH: " + MAX_DEPTH + " LIM_DEPTH: " + LIM_DEPTH + " expected: " + sum_exp_at_k
-          + " actual: " + board.getScore() + "\n");
+          + " actual: " + board.getScore() + " diff: " +  diff + " Flag: " + (diff > 0 ? 1 : 0) + "\n");
+      pw.flush();
     }
     return score / count;
   }
 
   public static void main(String[] args) throws Exception {
     PrintWriter pw = new PrintWriter(new File("output.txt"));
-    simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
-        1 /* play 10 times */, pw);
+
+    int[] lim_depth_list = {3, 4, 5, 7};
+    int[] max_depth_list = {50, 100, 200, 500};
+
+    // int[] lim_depth_list = {3, 4};
+    // int[] max_depth_list = {10, 20, 50};
+
+    for (int max_depth : max_depth_list) {
+    	MAX_DEPTH = max_depth;
+    	for (int lim_depth : lim_depth_list) {
+    		LIM_DEPTH = lim_depth;
+    		simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
+        				10 /* play 10 times */, pw);
+    	}
+    }
+
     pw.close();
     // Random generator = new Random(9);
     // Board board = new Board(generator, 3);
