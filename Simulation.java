@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class Simulation {
-  private static final int LIM_DEPTH = 5;
+  private static final int LIM_DEPTH = 2;
   public static int INIT_DEPTH = 0;
   public static int MAX_DEPTH = 100;
   public static long SEED = 999;
@@ -183,6 +183,8 @@ public class Simulation {
     // approximate if flag is set, otherwise go all the way down to `maxPlays`
     int maxBFTDepth = ALG_APPROXIMATE_BFT ? LIM_DEPTH : MAX_DEPTH;
 
+    double exp_at_k = 0.0, actual_at_k = 0.0, scoreAtPrevK = 0.0;
+
     while (count < maxPlays) {
       // initialize the board to the same initialGrid, but use a different seed
       // so that our plays vary
@@ -204,8 +206,19 @@ public class Simulation {
 
         if (ALG_APPROXIMATE_BFT && currDepth % maxBFTDepth == 0) {
           // copy the board to prevent the code from changing ours
-          Board s = new Board(rand, board.getGrid());
+          Board s = new Board(board);
+          actual_at_k = board.getScore() - scoreAtPrevK;
+
+          // Print how much we improved in `maxBFTDepth` vs how much we expected to improve
+          if (currDepth > 0) {
+            System.out.println(String.format("actual gain@%d: %f;", currDepth, actual_at_k));
+            System.out.println(String.format("expect gain@%d: %f;", currDepth, exp_at_k));
+            System.out.println(String.format("diff       @%d: %f;", currDepth, actual_at_k - exp_at_k));
+          }
+
           next = BFT(s, 0, maxBFTDepth);
+          scoreAtPrevK = board.getScore();
+          exp_at_k = next.t1;
         }
         // Move in direction of highest expected score
         // Log actions

@@ -102,6 +102,22 @@ public class Board implements Cloneable {
     setGrid(inputBoard);
   }
 
+  /**
+   * Copy constructor.
+   *
+   * @param b board to be copied
+   */
+  public Board(Board b) {
+    this.random = b.random;
+    this.score = b.score;
+
+    this.GRID_SIZE = b.getGrid().length;
+    this.undoGrids = new Stack<>();
+    this.undoScores = new Stack<>();
+
+    setGrid(b.getGrid());
+  }
+
 
   /**
    * return the tile value in a particular cell in the grid.
