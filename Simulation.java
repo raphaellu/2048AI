@@ -155,7 +155,7 @@ public class Simulation {
         // copy the board to prevent the code from changing ours
         //Board s = new Board(rand, board.getGrid());
         //Tuple<Double, Direction, Map> next = BFT(s, 0, maxBFTDepth);
-
+        //
         // Move in direction of highest expected score
         // Log actions
         System.out.println(String.format("@%d: took action %s (E[score@%d] = %.2f)", currDepth,
@@ -174,8 +174,8 @@ public class Simulation {
   }
 
   public static void main(String[] args) {
-     simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, 
-            10 /* play 10 times */);
+    simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
+        10 /* play 10 times */);
     // Random generator = new Random(9);
     // Board board = new Board(generator, 3);
     // System.out.println("init:");
