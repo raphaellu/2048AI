@@ -24,6 +24,7 @@
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
+import java.util.Arrays;
 
 public class Board implements Cloneable {
 
@@ -123,6 +124,21 @@ public class Board implements Cloneable {
     for (int r = 0; r < grid.length; r++) {
       for (int c = 0; c < grid[r].length; c++) {
         gridCopy[r][c] = grid[r][c];
+      }
+    }
+    return gridCopy;
+  }
+
+  /**
+   * get a 1d copy of the grid
+   *
+   * @return A copy of the grid
+   */
+  public int[] getGrid1D() {
+    int[] gridCopy = new int[GRID_SIZE*GRID_SIZE];
+    for (int r = 0; r < grid.length; r++) {
+      for (int c = 0; c < grid[r].length; c++) {
+        gridCopy[r*GRID_SIZE + c] = grid[r][c];
       }
     }
     return gridCopy;
@@ -793,5 +809,10 @@ public class Board implements Cloneable {
       outputString.append("\n");
     }
     return outputString.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(this.getGrid1D());
   }
 }

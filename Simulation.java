@@ -6,15 +6,15 @@ import java.util.Map;
 import java.util.Random;
 
 public class Simulation {
-  private static final int LIM_DEPTH = 1;
+  private static final int LIM_DEPTH =4;
   public static int INIT_DEPTH = 0;
-  public static int MAX_DEPTH = 2;
+  public static int MAX_DEPTH = 4;
   public static long SEED = 999;
   public static int GRID_SIZE = 4;
 
   /* different algorithms/policies */
-  public static boolean ALG_BFT = false;
-  public static boolean ALG_APPROXIMATE_BFT = true;
+  public static boolean ALG_BFT = true;
+  public static boolean ALG_APPROXIMATE_BFT = false;
 
   /* TODO: Joseph */
   public static List<Board> expand(Board s, Direction direction) {
@@ -53,12 +53,11 @@ public class Simulation {
   /* TODO: Dustin */
   // return the final expected score
   public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth) {
-
     if (currDepth == maxDepth) {
       if (ALG_APPROXIMATE_BFT)
         return approximateBFT(s); // run some heuristic
       else
-        return new Tuple<Double, Direction, Map>(); // i.e. 0
+        return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
     }
 
 
@@ -86,7 +85,7 @@ public class Simulation {
         Tuple<Double, Direction, Map> expMaxNextDir = BFT(sPrime, currDepth + 1, maxDepth);
         expMax += (1.0 / nextStates.size()) * expMaxNextDir.t1;
         // Add this to the list of candidates
-        candidates.put(Arrays.hashCode(sPrime.getGrid()), expMaxNextDir);
+        candidates.put(sPrime.hashCode(), expMaxNextDir);
       }
 
       // Update the max
@@ -140,7 +139,7 @@ public class Simulation {
     double score = 0;
 
     // approximate if flag is set, otherwise go all the way down to `maxPlays`
-    int maxDepth = ALG_APPROXIMATE_BFT ? LIM_DEPTH : maxPlays;
+    int maxBFTDepth = ALG_APPROXIMATE_BFT ? LIM_DEPTH : MAX_DEPTH;
 
     while (count < maxPlays) {
       // initialize the board to the same initialGrid, but use a different seed
@@ -148,22 +147,24 @@ public class Simulation {
       Random rand = new Random(SEED + count);
       Board board = new Board(rand, initialGrid);
       System.out.println("Initial board:\n" + board.toString());
+      Tuple<Double, Direction, Map> next = BFT(board, 0, maxBFTDepth);
 
       // Play the game up to depth `MAX_DEPTH`
-      for (int currDepth = 0; currDepth < maxPlays; currDepth++) {
+      for (int currDepth = 0; currDepth < MAX_DEPTH; currDepth++) {
         // Evaluate our current state
         // copy the board to prevent the code from changing ours
-        Board s = new Board(rand, board.getGrid());
-        Tuple<Double, Direction, Map> next = BFT(s, currDepth, maxDepth);
+        //Board s = new Board(rand, board.getGrid());
+        //Tuple<Double, Direction, Map> next = BFT(s, 0, maxBFTDepth);
 
         // Move in direction of highest expected score
         // Log actions
         System.out.println(String.format("@%d: took action %s (E[score@%d] = %.2f)", currDepth,
-            next.t2, maxDepth, next.t1));
+            next.t2, maxBFTDepth, next.t1));
         board.move(next.t2);
         System.out.println(board);
         board.addRandomTile();
         System.out.println(board);
+        next = (Tuple<Double, Direction,Map>) next.t3.get(board.hashCode());
       }
       score += board.getScore();
 
@@ -173,7 +174,8 @@ public class Simulation {
   }
 
   public static void main(String[] args) {
-    simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, MAX_DEPTH);
+     simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, 
+            10 /* play 10 times */);
     // Random generator = new Random(9);
     // Board board = new Board(generator, 3);
     // System.out.println("init:");
