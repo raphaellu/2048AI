@@ -1,11 +1,11 @@
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.*;
-import java.io.*;
 
 public class Simulation {
   private static final int LIM_DEPTH = 3;
@@ -54,9 +54,10 @@ public class Simulation {
 
   /* TODO: Dustin */
   // return the final expected score
-  public static Tuple<Double, Direction, Map> BFT_recurse(Board s, int currDepth, int maxDepth) {
+  public static Tuple<Double, Direction, Map> BFT_recurse(Board s, int currDepth, int maxDepth,
+      boolean enableHeuristic) {
     if (currDepth == maxDepth || s.isGameOver()) {
-      if (!s.isGameOver() && ALG_APPROXIMATE_BFT)
+      if (!s.isGameOver() && ALG_APPROXIMATE_BFT && enableHeuristic)
         return approximateBFT(s); // run some heuristic
       else
         return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
@@ -83,7 +84,8 @@ public class Simulation {
       for (Board sPrime : nextStates) {
         // Get the exp map, the direction taken to get it, and a map of all of the candidates in
         // that direction
-        Tuple<Double, Direction, Map> expMaxNextDir = BFT_recurse(sPrime, currDepth + 1, maxDepth);
+        Tuple<Double, Direction, Map> expMaxNextDir =
+            BFT_recurse(sPrime, currDepth + 1, maxDepth, enableHeuristic);
         expMax += (1.0 / nextStates.size()) * expMaxNextDir.t1;
         // Add this to the list of candidates
         candidates.put(sPrime.hashCode(), expMaxNextDir);
@@ -100,11 +102,12 @@ public class Simulation {
   }
 
   @SuppressWarnings("unchecked")
-  public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth, boolean enableHeuristic) {
+  public static Tuple<Double, Direction, Map> BFT(Board s, int currDepth, int maxDepth,
+      boolean enableHeuristic) {
     if (currDepth == maxDepth || s.isGameOver()) {
       if (!s.isGameOver() && ALG_APPROXIMATE_BFT && enableHeuristic)
         return approximateBFT(s); // run some heuristic
-        // return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null);
+      // return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null);
       else
         return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
     }
@@ -129,7 +132,7 @@ public class Simulation {
             // Get the exp map, the direction taken to get it, and a map of all of the candidates in
             // that direction
             Tuple<Double, Direction, Map> expMaxNextDir =
-                BFT_recurse(sPrime, currDepth + 1, maxDepth);
+                BFT_recurse(sPrime, currDepth + 1, maxDepth, enableHeuristic);
             expMax = expMax + (1.0 / nextStates.size()) * expMaxNextDir.t1;
             // Add this to the list of candidates
             candidates.put(sPrime.hashCode(), expMaxNextDir);
@@ -234,8 +237,8 @@ public class Simulation {
           exp_at_k = next.t1;
           sum_exp_at_k += BFT(s, 0, maxBFTDepth, false).t1;
           System.out.println("================");
-          System.out.println(exp_at_k);
-          System.out.println(BFT(s, 0, maxBFTDepth, false).t1);
+          System.out.println("Exp   @k: " + sum_exp_at_k);
+          System.out.println("Actual@k: " + board.getScore());
         }
         // Move in direction of highest expected score
         // Log actions
@@ -252,13 +255,14 @@ public class Simulation {
       score += board.getScore();
 
       count++;
-      pw.write("MAX_DEPTH: " + MAX_DEPTH + " LIM_DEPTH: " + LIM_DEPTH + " expected: " + sum_exp_at_k + " actual: " + board.getScore() + "\n");
+      pw.write("MAX_DEPTH: " + MAX_DEPTH + " LIM_DEPTH: " + LIM_DEPTH + " expected: " + sum_exp_at_k
+          + " actual: " + board.getScore() + "\n");
     }
     return score / count;
   }
 
   public static void main(String[] args) throws Exception {
-  	PrintWriter pw = new PrintWriter(new File("output.txt"));
+    PrintWriter pw = new PrintWriter(new File("output.txt"));
     simulate(new int[][] {{0, 0, 2, 0}, {0, 2, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
         1 /* play 10 times */, pw);
     pw.close();
