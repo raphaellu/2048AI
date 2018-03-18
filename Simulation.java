@@ -1,11 +1,5 @@
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 public class Simulation {
   private static int LIM_DEPTH = 3;
@@ -14,9 +8,18 @@ public class Simulation {
   public static long SEED = 999;
   public static int GRID_SIZE = 4;
 
+  public static final int OPEN_SPACE = 0;
+  public static final int MOVABLE_DIRS = 1;
+  public static final int EDGE_TILES = 2;
+  public static final int CORNER_TILES = 3;
+  public static final int POTENTIAL_MERGE = 4;
+
   /* different algorithms/policies */
   public static boolean ALG_BFT = false;
   public static boolean ALG_APPROXIMATE_BFT = !ALG_BFT;
+
+
+  public static HashSet<Integer> policies;
 
   /* TODO: Joseph */
   public static List<Board> expand(Board s, Direction direction) {
@@ -58,7 +61,7 @@ public class Simulation {
       boolean enableHeuristic) {
     if (currDepth == maxDepth || s.isGameOver()) {
       if (!s.isGameOver() && ALG_APPROXIMATE_BFT && enableHeuristic)
-        return approximateBFT(s); // run some heuristic
+        return approximateBFT(s, policies); // run some heuristic
       else
         return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
     }
@@ -106,7 +109,7 @@ public class Simulation {
       boolean enableHeuristic) {
     if (currDepth == maxDepth || s.isGameOver()) {
       if (!s.isGameOver() && ALG_APPROXIMATE_BFT && enableHeuristic)
-        return approximateBFT(s); // run some heuristic
+        return approximateBFT(s, policies); // run some heuristic
       // return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null);
       else
         return new Tuple<Double, Direction, Map>(0.0, Direction.UP, null); // i.e. 0
@@ -148,7 +151,7 @@ public class Simulation {
 
   /* TODO: Carlos */
   // return the final expected score
-  public static Tuple<Double, Direction, Map> approximateBFT(Board s) {
+  public static Tuple<Double, Direction, Map> approximateBFT(Board s, HashSet<Integer> policies) {
     // No more candidates, just an estimate
     Map<Integer, Tuple<Double, Direction, Map>> nowhereToGo = new HashMap<>();
 
@@ -159,6 +162,7 @@ public class Simulation {
     int maxTile = 0, maxR = 0, maxC = 0;
 
     // Compute total sum and get number of open tiles
+    // POLICY: OPEN_SPACE
     for (int r = 0; r < grids.length; ++r) {
       for (int c = 0; c < grids[0].length; ++c) {
 
@@ -166,24 +170,76 @@ public class Simulation {
         maxTile = Math.max(maxTile, grids[r][c]);
 
 
-        total += grids[r][c] = 2;
+        total += grids[r][c];
         if (grids[r][c] == 0)
           numOpen++;
       }
     }
 
     // account for possibility of moves
+    // POLICY: MOVABLE_DIRS
     Direction[] dirs = moves(s);
     int countOfMoves = 0;
     for (Direction dir : dirs)
       if (dir != null)
         countOfMoves++;
 
+
+    // account for large tiles on the edge
+    // POLICY: EDGE_TILES
+    int numLargeEdgeTiles = 0;
+    for (int r = 0; r < grids.length; ++r) {
+      for (int c = 0; c < grids[0].length; ++c) {
+
+        if (r == 0 || r == grids.length - 1 || c == 0 || c == grids.length - 1) {
+          if (grids[r][c] >= maxTile / 2.0) numLargeEdgeTiles++;
+        }
+      }
+    }
+
+    // account for large tiles at the corner
+    // POLICY: EDGE_TILES
+    int numCornerTiles = 0;
+    for (int r = 0; r < grids.length; ++r) {
+      for (int c = 0; c < grids[0].length; ++c) {
+
+        if ( (r == 0 && c == 0) || (r == 0 && c == grids.length-1) || (r == grids.length-1 && c == 0)
+             || (r == grids.length-1 && c == grids.length-1) )
+        {
+          if (grids[r][c] >= maxTile / 2.0) numCornerTiles++;
+        }
+      }
+    }
+
+    // account for potential merges across rows and cols 
+    // POLICY: POTENTIAL_MERGE
+    int numPotentialMerges = 0;
+    for (int r = 0; r < grids.length-1; ++r) {
+      for (int c = 0; c < grids[0].length-1; ++c) {
+        if (grids[r][c] == grids[r][c+1] || grids[r][c] == grids[r+1][c])
+          numPotentialMerges ++;
+      }
+    }
+
     // Now estimate for `limDepth` to `maxDepth`
     // Multiply sum of current tiles by |num open spots|/|board size|
     // (bonus for having more open spots)
     int boardSize = grids.length * grids.length;
-    total *= (numOpen + grids.length * countOfMoves) / boardSize;
+
+    double factor = 0.0;
+    if (policies.contains(OPEN_SPACE))
+      factor += numOpen;
+    if (policies.contains(MOVABLE_DIRS))
+      factor += grids.length * countOfMoves;
+    if (policies.contains(EDGE_TILES))
+      factor += numLargeEdgeTiles;
+    if (policies.contains(CORNER_TILES))
+      factor += grids.length * numCornerTiles;
+    if (policies.contains(POTENTIAL_MERGE))
+      factor += numPotentialMerges;
+    total *= 1 + (factor / boardSize);  
+    // total *= (numOpen + grids.length * countOfMoves) / boardSize;
+
 
     // reward highest value at corner
     return new Tuple<Double, Direction, Map>(total, Direction.UP, nowhereToGo);
@@ -236,6 +292,7 @@ public class Simulation {
           scoreAtPrevK = board.getScore();
           exp_at_k = next.t1;
           sum_exp_at_k += BFT(s, 0, maxBFTDepth, false).t1;
+          // sum_exp_at_k_wo += exp_at_k;
           // System.out.println("================");
           // System.out.println("Exp   @k: " + sum_exp_at_k);
           // System.out.println("Actual@k: " + board.getScore());
@@ -256,8 +313,8 @@ public class Simulation {
 
       count++;
       double diff = board.getScore() - sum_exp_at_k;
-      pw.write("MAX_DEPTH: " + MAX_DEPTH + " LIM_DEPTH: " + LIM_DEPTH + " expected: " + sum_exp_at_k
-          + " actual: " + board.getScore() + " diff: " +  diff + " Flag: " + (diff > 0 ? 1 : 0) + "\n");
+      pw.write("MAX_DEPTH: " + MAX_DEPTH + "\tLIM_DEPTH: " + LIM_DEPTH + "\texpected: " + sum_exp_at_k
+          + " actual: " + board.getScore() + "\tdiff: " +  diff + "\tFlag: " + (diff > 0 ? 1 : 0) + "\n");
       pw.flush();
     }
     return score / count;
@@ -265,8 +322,15 @@ public class Simulation {
 
   public static void main(String[] args) throws Exception {
     PrintWriter pw = new PrintWriter(new File("output.txt"));
+    // Add all heuristic policies wishing to use
+    policies = new HashSet<>();
+    policies.add(OPEN_SPACE);
+    policies.add(EDGE_TILES);
+    policies.add(MOVABLE_DIRS);
+    policies.add(CORNER_TILES);
+    policies.add(POTENTIAL_MERGE);
 
-    int[] lim_depth_list = {3, 4, 5, 7};
+    int[] lim_depth_list = {3, 4, 5};
     int[] max_depth_list = {50, 100, 200, 500};
 
     // int[] lim_depth_list = {3, 4};
@@ -282,13 +346,6 @@ public class Simulation {
     }
 
     pw.close();
-    // Random generator = new Random(9);
-    // Board board = new Board(generator, 3);
-    // System.out.println("init:");
-    // System.out.println(board);
-    // List<Board> res = expand(board, Direction.DOWN);
-    // for (Board b : res)
-    // System.out.println(b);
   }
 }
 
